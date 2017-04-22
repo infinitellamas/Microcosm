@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?><DEFECTS><DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\jacob\documents\github\microclasm\lib\prariedog\</FILEPATH>
+      <FILENAME>rendermanager.cpp</FILENAME>
+      <LINE>60</LINE>
+      <COLUMN>8</COLUMN>
+    </SFA>
+    <DEFECTCODE>6283</DEFECTCODE>
+    <DESCRIPTION>'frame' is allocated with array new [], but deleted with scalar delete.</DESCRIPTION>
+    <FUNCTION>RenderManager::RenderScene</FUNCTION>
+    <DECORATED>?RenderScene@RenderManager@@QAEXV?$vector@PAVEntity@@V?$allocator@PAVEntity@@@std@@@std@@@Z</DECORATED>
+    <FUNCLINE>21</FUNCLINE>
+    <PATH>
+      <SFA>
+        <FILEPATH>c:\users\jacob\documents\github\microclasm\lib\prariedog\</FILEPATH>
+        <FILENAME>rendermanager.cpp</FILENAME>
+        <LINE>28</LINE>
+        <COLUMN>15</COLUMN>
+      </SFA>
+      <SFA>
+        <FILEPATH>c:\users\jacob\documents\github\microclasm\lib\prariedog\</FILEPATH>
+        <FILENAME>rendermanager.cpp</FILENAME>
+        <LINE>60</LINE>
+        <COLUMN>8</COLUMN>
+      </SFA>
+    </PATH>
+  </DEFECT></DEFECTS>
