@@ -3,19 +3,22 @@
 c:\users\jacob\documents\github\microclasm\microclasm\microclasm\gamedata.h(126): warning C4018: '<': signed/unsigned mismatch
 c:\users\jacob\documents\github\microclasm\microclasm\microclasm\gamedata.h(127): warning C4244: 'argument': conversion from 'int' to 'float32', possible loss of data
 c:\users\jacob\documents\github\microclasm\microclasm\microclasm\gamedata.h(240): warning C4244: 'argument': conversion from 'int' to 'float32', possible loss of data
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(292): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(296): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(346): warning C4018: '<': signed/unsigned mismatch
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(389): warning C4018: '<': signed/unsigned mismatch
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(414): warning C4018: '<': signed/unsigned mismatch
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(416): warning C4244: 'argument': conversion from 'double' to 'float32', possible loss of data
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(424): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(444): warning C4018: '<': signed/unsigned mismatch
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(447): warning C4018: '<': signed/unsigned mismatch
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(481): warning C4018: '<': signed/unsigned mismatch
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(496): warning C4244: 'argument': conversion from 'int' to 'float32', possible loss of data
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(518): warning C4305: '-=': truncation from 'double' to 'float'
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(529): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(537): warning C4018: '<': signed/unsigned mismatch
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(262): warning C4244: 'argument': conversion from 'int' to 'float32', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(314): warning C4244: 'argument': conversion from 'int' to 'float32', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(370): warning C4244: 'argument': conversion from 'int' to 'float32', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(546): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(550): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(600): warning C4018: '<': signed/unsigned mismatch
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(643): warning C4018: '<': signed/unsigned mismatch
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(668): warning C4018: '<': signed/unsigned mismatch
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(670): warning C4244: 'argument': conversion from 'double' to 'float32', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(678): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(698): warning C4018: '<': signed/unsigned mismatch
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(701): warning C4018: '<': signed/unsigned mismatch
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(735): warning C4018: '<': signed/unsigned mismatch
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(750): warning C4244: 'argument': conversion from 'int' to 'float32', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(772): warning C4305: '-=': truncation from 'double' to 'float'
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(783): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\jacob\documents\github\microclasm\microclasm\microclasm\microclasm.cpp(791): warning C4018: '<': signed/unsigned mismatch
   Microclasm.vcxproj -> C:\Users\Jacob\Documents\GitHub\Microclasm\Microclasm\Microclasm\..\Build\Microclasm.exe
   Microclasm.vcxproj -> ..\Build\Microclasm.pdb (Full PDB)

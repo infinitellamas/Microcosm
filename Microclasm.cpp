@@ -17,8 +17,7 @@
 #include "GameData.h"
 
 std::pair<int, int> runGame(); //Returns game time and win state
-void showMenu(int gotoState, int gameTime);
-bool showRestartScreen(); // true if start again, false if quit.
+bool showMenu(int gotoState, int gameTime); //true if continue, false if quit
 
 RenderManager rndrMgr;
 SoundManager sndMgr;
@@ -30,41 +29,82 @@ char up = 'w',down = 's',left = 'a',right = 'd',shoot = 'p',absorb = 'o';
 
 int main()
 {
-	showMenu(-1,-1); // Just show menu like normal
-	runGame();
-	bool keepGoing = showRestartScreen();
+
+	sndMgr.addSound("assets/sounds/game_bgm.wav");
+	sndMgr.addSound("assets/sounds/menu_bgm.wav");
+	sndMgr.addSound("assets/sounds/death_sfx.wav");
+	sndMgr.addSound("assets/sounds/player_hit_sfx.wav");
+	sndMgr.addSound("assets/sounds/player_shoot_sfx.wav");
+	sndMgr.addSound("assets/sounds/redcell_absorb_finish_sfx.wav");
+	sndMgr.addSound("assets/sounds/redcell_absorb_sfx.wav");
+	sndMgr.addSound("assets/sounds/whitecell_hit_sfx.wav");
+	sndMgr.addSound("assets/sounds/whitecell_shoot_sfx.wav");
 
 
-	/*
-	while (restart) {
-		showMenu(-1, -1); // Just show menu like normal
-		runGame();
-		keepGoing = showRestartScreen();
-	}*/
+	std::pair<int,int> gameInfo(-1,-1);
+	while (showMenu(gameInfo.first, gameInfo.second)) {
+		
+		// I know this is akin to heresy but I dont have much time
+		//(&rndrMgr)->~RenderManager();
+		//new (&rndrMgr) RenderManager();
+
+		//(&sndMgr)->~SoundManager();
+		//new (&sndMgr) SoundManager();
+
+		(&physMgr)->~PhysicsManager();
+		new (&physMgr) PhysicsManager();
+
+		(&inptMgr)->~InputManager();
+		new (&inptMgr) InputManager();
+
+
+
+		gameInfo = runGame();
+	}
+
 
     return 0;
 }
 
-bool showRestartScreen() {
-	return false;
-}
+bool showMenu(int gotoState, int gameTime) {
+	int menustate = 0;
+	if (gotoState == -1) { // We are beginning
+		menustate = 0;
+	}
+	if (gotoState == 0) { // We just lost
+		menustate = 2;
+	}
+	if (gotoState == 1) { // we just won
+		menustate = 3;
+	}
 
-
-void showMenu(int gotoState, int gameTime) {
-	int menustate = gotoState != -1 ? gotoState : 0;
 	inptMgr.listenForKey(up);
+	inptMgr.listenForKey('z'); //azerty up
+	inptMgr.listenForKey('q'); //qwertz left
 	inptMgr.listenForKey(down);
 	inptMgr.listenForKey(shoot);
+	inptMgr.listenForKey(absorb);
 	int SelectorPos = 0;
-
 
 	/*
 		0 is main menu, 1 is tutorial and controls, 2 is win screen, 3 is lose screen
 	*/
+
+	HCHANNEL ch = sndMgr.playSound("assets/sounds/menu_bgm.wav");
+	BASS_ChannelPlay(ch, FALSE);
 	std::chrono::milliseconds thisMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 	std::chrono::milliseconds lastMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-
+	int menuSoundMilliseconds = 10100;
+	std::chrono::milliseconds timeSoundPlayed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 	while (true) {
+		if (timeSoundPlayed.count() + menuSoundMilliseconds < thisMilliseconds.count()) {
+			timeSoundPlayed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+			
+			BASS_ChannelStop(ch);
+			BASS_ChannelPlay(ch = sndMgr.playSound("assets/sounds/menu_bgm.wav"), FALSE);
+		}
+		
+		
 		std::this_thread::sleep_for((std::chrono::milliseconds)(10));
 		thisMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 		if (lastMilliseconds.count() + 1 / 60 < thisMilliseconds.count()) {
@@ -105,7 +145,7 @@ void showMenu(int gotoState, int gameTime) {
 				PlayGame.setPos({ 7,12,0 });
 
 				Entity SetControls;
-				Glyphset SetControlsSet = stringToGlyphset("Controls & Tutorial", { 0,0 });
+				Glyphset SetControlsSet = stringToGlyphset("Tutorial", { 0,0 });
 				SetControls.setGlyphset(SetControlsSet);
 				SetControls.setPos({ 7,14,0 });
 
@@ -118,40 +158,45 @@ void showMenu(int gotoState, int gameTime) {
 				Glyphset SelectorSet = { Glyph('>',{0,0}) };
 				Selector.setGlyphset(SelectorSet);
 				Selector.setPos({ 6,(float)(12 + SelectorPos * 2),0 });
-
+				HCHANNEL m;
 				if (inptMgr.getKey(down).getKeyDown()) {
 					SelectorPos++;
+					BASS_ChannelPlay(m = sndMgr.playSound("assets/sounds/whitecell_hit_sfx.wav"), FALSE);
 					if (SelectorPos > 2) {
 						SelectorPos = 0;
 					}
 				}
-				if (inptMgr.getKey(up).getKeyDown()) {
+				if (inptMgr.getKey(up).getKeyDown() || inptMgr.getKey('z').getKeyDown()) {
 					SelectorPos--;
+					BASS_ChannelPlay(m = sndMgr.playSound("assets/sounds/whitecell_hit_sfx.wav"), FALSE);
 					if (SelectorPos < 0) {
 						SelectorPos = 2;
 					}
 				}
 				if (inptMgr.getKey(shoot).getKeyDown()) {
 					if (SelectorPos == 0) {
-						break; //Play the game
+						BASS_ChannelStop(ch);
+
+
+						return true; //Play the game
 					}
 					if (SelectorPos == 1) {
 						menustate = 1;
 					}
 					if (SelectorPos == 2) {
-						menustate = 2;
+						return false;
 					}
 
 				}
 
 				Entity currentControlScheme;
 				std::stringstream k;
-				k << "Current controls: " << up << "/" << down << "/" << left << "/" << right << " shoot: " << shoot << " absorb: " << absorb;
+				k << "Controls: " << up << "/" << down << "/" << left << "/" << right << " shoot: " << shoot << " absorb: " << absorb;
 				Glyphset currentControlSchemeSet = stringToGlyphset(k.str(), b2Vec2(0, 0));
 				currentControlScheme.setGlyphset(currentControlSchemeSet);
-				currentControlScheme.setPos({ 2,(float)rndrMgr.getWindowY() - 2,0 });
+				currentControlScheme.setPos({ 5,(float)rndrMgr.getWindowY() - 2,0 });
 
-
+				
 
 				rndrMgr.setWobble(true, 1);
 				rndrMgr.RenderScene({ &Title, &Subtitle, &PlayerRep, &PlayGame, &SetControls, &Quit, &Selector, &currentControlScheme });
@@ -169,20 +214,176 @@ void showMenu(int gotoState, int gameTime) {
 				Subtitle.setGlyphset(SubtitleSet);
 				Subtitle.setPos({ 5,3,0 });
 
+				Entity Desc1;
+				Glyphset Desc1SetFull;
+				Glyphset Desc1Set = stringToGlyphset("This virus has entered its first victim and needs", { 0,0 });
+				Glyphset Desc1Set2 = stringToGlyphset("your help to become strong enough to take over.", { 0,1 });
+				Glyphset Desc1Set3 = stringToGlyphset("Guide the virus and absorb red blood cells while", { 0,2 });
+				Glyphset Desc1Set4 = stringToGlyphset("shooting virions to fend off the white blood cell army!", { 0,3 });
+				Desc1SetFull.insert(Desc1SetFull.end(), Desc1Set.begin(), Desc1Set.end());
+				Desc1SetFull.insert(Desc1SetFull.end(), Desc1Set2.begin(), Desc1Set2.end());
+				Desc1SetFull.insert(Desc1SetFull.end(), Desc1Set3.begin(), Desc1Set3.end());
+				Desc1SetFull.insert(Desc1SetFull.end(), Desc1Set4.begin(), Desc1Set4.end());
+				Desc1.setGlyphset(Desc1SetFull);
+				Desc1.setPos({ 5,5,0 });
+
+				Entity currentControlScheme;
+				std::stringstream k;
+				k << "Controls: " << up << "/" << down << "/" << left << "/" << right << " shoot: " << shoot << " absorb: " << absorb;
+				Glyphset currentControlSchemeSet = stringToGlyphset(k.str(), b2Vec2(0, 0));
+				currentControlScheme.setGlyphset(currentControlSchemeSet);
+				currentControlScheme.setPos({ 5,(float)rndrMgr.getWindowY() - 2,0 });
+
+				Entity PlayerRep;
+				std::chrono::milliseconds time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+				if ((time.count() % 1000) < 250) {
+					PlayerRep.setGlyphset(pMove1);
+				}
+				else if ((time.count() % 1000) < 500) {
+					PlayerRep.setGlyphset(pMove2);
+				}
+				else if ((time.count() % 1000) < 750) {
+					PlayerRep.setGlyphset(pMove3);
+				}
+				else {
+					PlayerRep.setGlyphset(pMove4);
+				}
+				PlayerRep.setPos({ 7,16,0 });
+
+				Entity RedCellRep;
+				RedCellRep.setGlyphset(rC1);
+				RedCellRep.setPos({ 21,16,0 });
+
+				Entity WhiteCellRep;
+				WhiteCellRep.setGlyphset(wC1);
+				WhiteCellRep.setPos({ 35,16,0 });
+
+				Entity ImgDesc;
+				ImgDesc.setGlyphset(stringToGlyphset("You         Red Cell     White Cell", b2Vec2(0,0)));
+				ImgDesc.setPos({ 6,11, 0 });
+
+				Entity backInfo;
+				k.str(std::string());
+				k.clear();
+				k << "Press " << absorb << " to go back.";
+				backInfo.setGlyphset(stringToGlyphset(k.str(), b2Vec2(0, 0)));
+				backInfo.setPos(b2Vec3(5,(int) rndrMgr.getWindowY() - 1, 0));
+
 				rndrMgr.setWobble(false, 0);
-				rndrMgr.RenderScene({ &Title, &Subtitle });
+				rndrMgr.RenderScene({ &Title, &Subtitle, &currentControlScheme, &Desc1, &PlayerRep, &RedCellRep, &WhiteCellRep, &ImgDesc, &backInfo });
+
+				
+				if (inptMgr.getKey(absorb).getKeyDown()) {
+					menustate = 0;
+				}
+			}
+			if (menustate == 2) { // lost
+				Entity Title;
+				Glyphset TitleSet = stringToGlyphset("Microcosm", { 0,0 });
+				Title.setGlyphset(TitleSet);
+				Title.setPos({ 5,2,0 });
+
+				Entity PlayerRep;
+				std::chrono::milliseconds time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+				PlayerRep.setGlyphset(wC1);
+				
+				int movex;
+				int movey;
+				if (time.count() % 100 < rand() % 10) {
+					movex = -2  + rand() % 4;
+					movey = -2  + rand() % 4;
+				}
+				else {
+					movex = 0;
+					movey = 0;
+				}
+
+				PlayerRep.setPos({ (float)(rndrMgr.getWindowX() - 20) + movex,(float)(rndrMgr.getWindowY() / 2) + movey , 0.0f });
+
+				Entity gameInfo;
+				std::stringstream k;
+				Glyphset gameInfo1 = stringToGlyphset("YOU LOST!", { 0,0 });
+				k << "Your virus lasted a whole " << gameTime << " seconds before being destroyed.";
+				Glyphset gameInfo2 = stringToGlyphset(k.str(), { 0,1 });
+				Glyphset gameInfo3 = stringToGlyphset("Better luck next time!", { 0,3 });
+				Glyphset gameInfoFull;
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo1.begin(), gameInfo1.end());
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo2.begin(), gameInfo2.end());
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo3.begin(), gameInfo3.end());
+				gameInfo.setGlyphset(gameInfoFull);
+				gameInfo.setPos({ 5,5,0 });
+
+				
+				Entity backInfo;
+				k.str(std::string());
+				k.clear();
+				k << "Press " << absorb << " to go back to the menu.";
+				backInfo.setGlyphset(stringToGlyphset(k.str(), b2Vec2(0, 0)));
+				backInfo.setPos(b2Vec3(5, (int)rndrMgr.getWindowY() - 1, 0));
+
+				rndrMgr.setWobble(false, 0);
+				rndrMgr.RenderScene({ &Title,  &PlayerRep, &gameInfo, &backInfo });
 
 
+				if (inptMgr.getKey(absorb).getKeyDown()) {
+					menustate = 0;
+				}
 
 			}
-			if (menustate == 2) { //
+			if (menustate == 3) { //won
+				Entity Title;
+				Glyphset TitleSet = stringToGlyphset("Microcosm", { 0,0 });
+				Title.setGlyphset(TitleSet);
+				Title.setPos({ 5,2,0 });
 
-			}
-			if (menustate == 3) {
+				Entity PlayerRep;
+				std::chrono::milliseconds time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+				if ((time.count() % 500) < 125) {
+					PlayerRep.setGlyphset(pMove1);
+				}
+				else if ((time.count() % 500) < 250) {
+					PlayerRep.setGlyphset(pMove2);
+				}
+				else if ((time.count() % 500) < 375) {
+					PlayerRep.setGlyphset(pMove3);
+				}
+				else {
+					PlayerRep.setGlyphset(pMove4);
+				}
+				PlayerRep.setPos({ (float)(rndrMgr.getWindowX() - 20),(float)(rndrMgr.getWindowY() / 2) , 0.0f });
 
-			}
-			if (menustate == 4) {
 
+				Entity gameInfo;
+				std::stringstream k;
+				Glyphset gameInfo1 = stringToGlyphset("YOU WON!", { 0,0 });
+				k << "Your virus lasted a whole " << gameTime << " seconds before defeating the immune system.";
+				Glyphset gameInfo2 = stringToGlyphset(k.str(), { 0,1 });
+				Glyphset gameInfo3 = stringToGlyphset("Your virus went on to infect the rest of humanity.", { 0,3 });
+				Glyphset gameInfo4 = stringToGlyphset("There were no survivors.", { 0,4 });
+				Glyphset gameInfo5 = stringToGlyphset("I hope you are happy.", { 0,5 });
+				Glyphset gameInfoFull;
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo1.begin(), gameInfo1.end());
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo2.begin(), gameInfo2.end());
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo3.begin(), gameInfo3.end());
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo4.begin(), gameInfo4.end());
+				gameInfoFull.insert(gameInfoFull.begin(), gameInfo5.begin(), gameInfo5.end());
+				gameInfo.setGlyphset(gameInfoFull);
+				gameInfo.setPos({ 5,5,0 });
+
+				Entity backInfo;
+				k.str(std::string());
+				k.clear();
+				k << "Press " << absorb << " to go back to the menu.";
+				backInfo.setGlyphset(stringToGlyphset(k.str(), b2Vec2(0, 0)));
+				backInfo.setPos(b2Vec3(5, (int)rndrMgr.getWindowY() - 1, 0));
+
+				rndrMgr.setWobble(false, 0);
+				rndrMgr.RenderScene({ &Title, &PlayerRep, &gameInfo, &backInfo });
+
+
+				if (inptMgr.getKey(absorb).getKeyDown()) {
+					menustate = 0;
+				}
 			}
 		}
 	}
@@ -192,7 +393,9 @@ std::pair<int,int> runGame() {
 	int gameTime = 0; //Survival time in seconds
 	int winState = 0; //0 is win, 1 is lose.
 
-
+	HCHANNEL bgmChannel = sndMgr.playSound("assets/sounds/game_bgm.wav");
+	BASS_ChannelPlay(bgmChannel, FALSE);
+	HCHANNEL ch2;
 
 	std::vector<Entity*> entities;
 	// Init all the things...
@@ -271,13 +474,14 @@ std::pair<int,int> runGame() {
 
 
 	/* Listen for keys being pressed.*/
+	inptMgr.listenForKey(up);
+	inptMgr.listenForKey('z');
 	inptMgr.listenForKey('q');
-	inptMgr.listenForKey('w');
-	inptMgr.listenForKey('a');
-	inptMgr.listenForKey('d');
-	inptMgr.listenForKey('s');
-	inptMgr.listenForKey('p');
-	inptMgr.listenForKey('o');
+	inptMgr.listenForKey(down);
+	inptMgr.listenForKey(left);
+	inptMgr.listenForKey(right);
+	inptMgr.listenForKey(shoot);
+	inptMgr.listenForKey(absorb);
 
 	/* Some player-specific variables so i can update the animations based on the players location*/
 	int lastPlayerX = 0;
@@ -304,6 +508,9 @@ std::pair<int,int> runGame() {
 	int framesPerHealthMax = 10;
 	int framesPerHealth = framesPerHealthMax;
 
+	std::chrono::milliseconds beginGame = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+
 	/* Variables for time-based events*/
 	std::chrono::milliseconds lastQuarterSecond = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 	std::chrono::milliseconds lastSecond = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -313,10 +520,22 @@ std::pair<int,int> runGame() {
 	std::chrono::microseconds thisMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
 	long long loops = 0;
+	int bgmMillis = 8700;
+	std::chrono::milliseconds lastSongLoop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
-	while (!inptMgr.getKey('q').getKeyDown() && absorbtions > 0 && absorbtions < totalAbsorptions) {
-		std::this_thread::sleep_for((std::chrono::milliseconds)(1));
+	while (absorbtions > 0 && absorbtions < totalAbsorptions) {
 		thisMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+		if (lastSongLoop.count() + bgmMillis < thisSecond.count()) {
+			lastSongLoop = thisSecond;
+			BASS_ChannelStop(bgmChannel);
+			BASS_ChannelPlay(bgmChannel = sndMgr.playSound("assets/sounds/game_bgm.wav") , FALSE);
+		}
+
+
+
+
+		std::this_thread::sleep_for((std::chrono::milliseconds)(1));
 		if (lastMilliseconds + (std::chrono::milliseconds)((int)(1000 / (60+(40*absorbtions/100)))) < thisMilliseconds) {
 			loops++;
 			lastMilliseconds = thisMilliseconds;
@@ -354,19 +573,19 @@ std::pair<int,int> runGame() {
 				}
 
 				float force = 0.5f;
-				if (inptMgr.getKey('w').getKeyHeld()) {
+				if (inptMgr.getKey(up).getKeyHeld() || inptMgr.getKey('z').getKeyHeld()) {
 					physMgr.getRigidBodyPtr(&player)->ApplyForceToCenter(b2Vec2(0, -force), true);
 				}
-				if (inptMgr.getKey('s').getKeyHeld()) {
+				if (inptMgr.getKey(down).getKeyHeld()) {
 					physMgr.getRigidBodyPtr(&player)->ApplyForceToCenter(b2Vec2(0, force), true);
 				}
-				if (inptMgr.getKey('a').getKeyHeld()) {
+				if (inptMgr.getKey(left).getKeyHeld() || inptMgr.getKey('q').getKeyHeld()) {
 					physMgr.getRigidBodyPtr(&player)->ApplyForceToCenter(b2Vec2(-force, 0), true);
 				}
-				if (inptMgr.getKey('d').getKeyHeld()) {
+				if (inptMgr.getKey(right).getKeyHeld()) {
 					physMgr.getRigidBodyPtr(&player)->ApplyForceToCenter(b2Vec2(force, 0), true);
 				}
-				if (inptMgr.getKey('p').getKeyDown()) {
+				if (inptMgr.getKey(shoot).getKeyDown()) {
 					//Spawn a bullet
 					absorbtions--;
 					Bullet* bullet = new Bullet;
@@ -378,9 +597,10 @@ std::pair<int,int> runGame() {
 					physMgr.getRigidBodyPtr(bullet)->ApplyLinearImpulse(b2Vec2(0.0001f, 0.0f), b2Vec2(0.0f, 0.0f), true);
 
 					bullets.push_back(bullet); // So we can keep track and kill them if we need
+					BASS_ChannelPlay(ch2 = sndMgr.playSound("assets/sounds/player_shoot_sfx.wav"), FALSE);
 				}
 
-				if (inptMgr.getKey('o').getKeyHeld()) {
+				if (inptMgr.getKey(absorb).getKeyHeld()) {
 					//Show suction animation
 					suction.setPos({ player.getPos().x,player.getPos().y, 0.25f });
 					if (suctionCooldown < 0) {
@@ -388,6 +608,7 @@ std::pair<int,int> runGame() {
 						if (suctionFrame == 1) {
 							suctionFrame = 2;
 							suction.setGlyphset(suction2);
+
 						}else if(suctionFrame == 2) {
 							suctionFrame = 3;
 							suction.setGlyphset(suction3);
@@ -411,22 +632,25 @@ std::pair<int,int> runGame() {
 								if (redCells.at(k)->getState() == 0) {
 									redCells.at(k)->setState(1);
 									redCells.at(k)->setGlyphset(rC2);
+									BASS_ChannelPlay(ch2 = sndMgr.playSound("assets/sounds/redcell_absorb_sfx.wav"), FALSE);
 								}
 								else if (redCells.at(k)->getState() == 1) {
 									redCells.at(k)->setState(2);
 									redCells.at(k)->setGlyphset(rC3);
+									BASS_ChannelPlay(ch2 = sndMgr.playSound("assets/sounds/redcell_absorb_sfx.wav"), FALSE);
 								}
 								else if (redCells.at(k)->getState() == 2) {
 									redCells.at(k)->setState(3);
 									redCells.at(k)->setGlyphset({ Glyph(' ', b2Vec2(0,0)) }); // Because its dead
 									physMgr.getRigidBodyPtr(redCells.at(k))->SetTransform(b2Vec2(-20.0f, -20.0f), 0);
 									redCells.at(k)->markForDeletion = true;
+									BASS_ChannelPlay(ch2 = sndMgr.playSound("assets/sounds/redcell_absorb_finish_sfx.wav"), FALSE);
 								}
 							}
 						}
 					}
 				}
-				if (!inptMgr.getKey('o').getKeyHeld()) {
+				if (!inptMgr.getKey(absorb).getKeyHeld()) {
 					suction.setPos({ -20.0,-20.0, 0.25f }); // Move suction back off screen
 					absorbCooldown = absorbCooldownMax;
 				}
@@ -434,7 +658,7 @@ std::pair<int,int> runGame() {
 
 			/* Handle spawning of red blood cells*/
 			{
-				if (loops % 200 == 0) {
+				if (loops % 100 == 0) {
 					RedCell* cell = new RedCell;
 					cell->setGlyphset(rC1);
 					cell->setPos({ rndrMgr.getWindowX() + 10.0f, 5 + rand() % ((int)rndrMgr.getWindowY() - 10) + 0.0f, 0.5f });
@@ -446,7 +670,7 @@ std::pair<int,int> runGame() {
 				for (int i = 0; i < redCells.size(); i++) {
 					if ((redCells.at(i)->getState() < 3)) {
 
-						physMgr.getRigidBodyPtr(redCells.at(i))->SetTransform(physMgr.getRigidBodyPtr(redCells.at(i))->GetTransform().p + b2Vec2(-0.0005f * (rand() % 5), 0), 0);
+						physMgr.getRigidBodyPtr(redCells.at(i))->SetTransform(physMgr.getRigidBodyPtr(redCells.at(i))->GetTransform().p + b2Vec2(-0.001f * (rand() % 5), 0), 0);
 						entitiesThisFrame.push_back(redCells.at(i));
 					}
 					else {//Put off screen
@@ -470,10 +694,10 @@ std::pair<int,int> runGame() {
 
 				for (int i = 0; i < whiteCells.size(); i++) {
 					if (!(whiteCells.at(i)->markForDeletion)) {
-						physMgr.getRigidBodyPtr(whiteCells.at(i))->SetTransform(physMgr.getRigidBodyPtr(whiteCells.at(i))->GetTransform().p + b2Vec2(-0.001f * (rand() % 5) - 0.001*whiteCells.at(i)->getState(), 0), 0);
+						physMgr.getRigidBodyPtr(whiteCells.at(i))->SetTransform(physMgr.getRigidBodyPtr(whiteCells.at(i))->GetTransform().p + b2Vec2(-0.001f * (rand() % 5) - 0.0005*(whiteCells.at(i)->getState()*2), 0), 0);
 						entitiesThisFrame.push_back(whiteCells.at(i));
 					
-						if (whiteCells.at(i)->getCooldown() < 0) {
+						if (whiteCells.at(i)->getCooldown() < 0 && whiteCells.at(i)->getPos().x > 0) {
 							whiteCells.at(i)->setCooldown(whiteCells.at(i)->getCooldownMax());
 							Bullet* bullet = new Bullet;
 							bullet->setGlyphset(enemyBulletGS);
@@ -485,6 +709,7 @@ std::pair<int,int> runGame() {
 
 							enemyBullets.push_back(bullet); // So we can keep track and kill them if we need
 							entities.push_back(bullet);
+							BASS_ChannelPlay(ch2 = sndMgr.playSound("assets/sounds/whitecell_shoot_sfx.wav"), FALSE);
 							
 						}
 						else {
@@ -507,7 +732,7 @@ std::pair<int,int> runGame() {
 							bullets.at(i)->markForDeletion = true; //Kill the bullet
 
 							physMgr.getRigidBodyPtr(bullets.at(i))->SetTransform(b2Vec2(-20.0, -20.0), 0);
-
+							BASS_ChannelPlay(ch2 = sndMgr.playSound("assets/sounds/whitecell_hit_sfx.wav"), FALSE);
 							if (whiteCells.at(k)->getState() == 0) {
 								whiteCells.at(k)->setState(1);
 								whiteCells.at(k)->setGlyphset(wC2);
@@ -583,6 +808,9 @@ std::pair<int,int> runGame() {
 
 
 			if (absorbtions < 10) {
+				HCHANNEL ch3 = sndMgr.playSound("assets/sounds/death_sfx.wav");
+				BASS_ChannelSetAttribute(ch3, BASS_ATTRIB_VOL, (10 - absorbtions)/10);
+				BASS_ChannelPlay(ch3, FALSE);
 				rndrMgr.setWobble(true, 10 - absorbtions);
 			}
 			else {
@@ -602,7 +830,20 @@ std::pair<int,int> runGame() {
 			entitiesThisFrame.clear();
 		}
 	}
-	std::pair<int, int> ret = { gameTime, winState };
+	if (absorbtions > 50) {
+		winState = 1;
+	}
+	else {
+		winState = 0;
+	}
+	std::chrono::milliseconds gameTimeMillis = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()) - beginGame;
+	
+	//Add a small wait so they dont skip past the end screen
+	std::this_thread::sleep_for((std::chrono::milliseconds)2000);
+
+	BASS_ChannelStop(bgmChannel);
+	gameTime = (int)(gameTimeMillis.count() / 1000);
+	std::pair<int, int> ret = { winState, gameTime };
 	return ret;
 }
 
