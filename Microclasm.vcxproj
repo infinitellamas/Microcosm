@@ -106,7 +106,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\Users\Jacob\Documents\GitHub\Microclasm\lib\bass24\c\bass.lib;C:\Users\Jacob\Documents\GitHub\Microclasm\lib\Box2D-2.3.1\Box2D-2.3.1\Box2D\Build\vs2013\bin\x32\Release\Box2D.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\Users\Jacob\Documents\GitHub\Microclasm\lib\bass24\c\bass.lib;C:\Users\Jacob\Documents\GitHub\Microclasm\lib\Box2D-2.3.1\Box2D-2.3.1\Box2D\Build\vs2013\bin\x32\Debug\Box2D.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,7 +122,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\Users\Jacob\Documents\GitHub\Microclasm\lib\bass24\c\bass.lib;C:\Users\Jacob\Documents\GitHub\Microclasm\lib\Box2D-2.3.1\Box2D-2.3.1\Box2D\Build\vs2013\bin\x32\Release\Box2D.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\Users\Jacob\Documents\GitHub\Microclasm\lib\bass24\c\bass.lib;C:\Users\Jacob\Documents\GitHub\Microclasm\lib\Box2D-2.3.1\Box2D-2.3.1\Box2D\Build\vs2013\bin\x32\Debug\Box2D.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
