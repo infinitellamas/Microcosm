@@ -109,16 +109,31 @@ Glyphset wC4 = {
 	Glyph('-',{ 0,-1 }), Glyph('|',{ -1,0 }), Glyph('Ï',{ 0,0 }), Glyph('|',{ 1,0 }),Glyph('-',{ 0,1 })
 };
 
+Glyphset suction1 = {
+	Glyph(',',{ -2,-3 }),Glyph(',',{ -1,-2 }),Glyph(',',{ 1,-3 }),Glyph(',',{ -3,1 }),Glyph(',',{ -2,2 }),Glyph(',',{ 1,3 }),Glyph(',',{ 3,3 })
+};
 
+Glyphset suction2 = {
+	Glyph(',',{ -2,-2 }),Glyph(',',{ 1,-2 }),Glyph(',',{ 0,-1 }),Glyph(',',{ -2,0 }),Glyph(',',{ -1,1 }),Glyph(',',{ 1,2 }),Glyph(',',{ 3,2 })
+};
 
+Glyphset suction3 = {
+	Glyph(',',{ -1,-3 }),Glyph(',',{ -1,-1 }),Glyph(',',{ -1,0 }),Glyph(',',{ -3,2 }),Glyph(',',{ 0,1 }),Glyph(',',{ 1,-1 }),Glyph(',',{ 1,1 }),Glyph(',',{ 2,3 })
+};
 
-
-
-Glyphset scrambleSet(Glyphset original) {
+Glyphset stringToGlyphset(std::string k, b2Vec2 beginPos) {
 	Glyphset g;
-
+	for (int i = 0; i < k.size(); i++) {
+		g.push_back({ Glyph(k.at(i),beginPos + b2Vec2(i,0)) });
+	}
 	return g;
 }
+
+Glyphset menuBGGS = {
+
+};
+
+
 
 class RedCell : public Entity {
 public:
@@ -184,26 +199,37 @@ class ContactListener : public b2ContactListener
 {
 
 	void BeginContact(b2Contact* contact) override {
-		Entity* ent1 = ((Entity *)contact->GetFixtureA()->GetBody()->GetUserData());
-		Entity* ent2 = ((Entity *)contact->GetFixtureB()->GetBody()->GetUserData());
+		if (contact->GetFixtureA() != nullptr && contact->GetFixtureB() != nullptr) {
+			Entity* ent1 = ((Entity *)contact->GetFixtureA()->GetBody()->GetUserData());
+			Entity* ent2 = ((Entity *)contact->GetFixtureB()->GetBody()->GetUserData());
 
-		ent2->isCollidingWith = ent1;
-		ent1->isCollidingWith = ent2;
-		
+			ent2->isCollidingWith = ent1;
+			ent1->isCollidingWith = ent2;
+		}
 	}
 
 	void EndContact(b2Contact* contact) override {
-		Entity* ent1 = ((Entity *)contact->GetFixtureA()->GetBody()->GetUserData());
-		Entity* ent2 = ((Entity *)contact->GetFixtureB()->GetBody()->GetUserData());
+		if (contact->GetFixtureA() != nullptr && contact->GetFixtureB() != nullptr) {
+			Entity* ent1 = ((Entity *)contact->GetFixtureA()->GetBody()->GetUserData());
+			Entity* ent2 = ((Entity *)contact->GetFixtureB()->GetBody()->GetUserData());
 
-		ent2->isCollidingWith = nullptr;
-		ent1->isCollidingWith = nullptr;
+			ent2->isCollidingWith = nullptr;
+			ent1->isCollidingWith = nullptr;
+		}
 	}
 
 };
 
 
-
+void pseudoDeleteBody(Entity* e, PhysicsManager* ph) {
+	// Doesnt really delete, just disables collisions so b2d spends as little time as possible on it
+	b2Body* b = ph->getRigidBodyPtr(e);
+	if (b) {
+		b2Filter fd;
+		fd.maskBits = 0x0000;
+		b->GetFixtureList()->SetFilterData(fd);
+	}
+}
 
 
 Glyphset createRandomLine(int length) {
